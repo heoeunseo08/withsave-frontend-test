@@ -5,6 +5,7 @@ import 'package:withsave_frontend_test/view/home_screen.dart';
 import 'package:withsave_frontend_test/view/login_screen.dart';
 import 'package:withsave_frontend_test/view/profile_screen.dart';
 import 'package:withsave_frontend_test/view/signup_screen.dart';
+import 'package:withsave_frontend_test/view_model/auth_view_model.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -12,13 +13,29 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String profile = '/profile';
   static const String add_post = '/add_post';
+
   static String edit_post(int id) => '/edit_post/$id';
+
   static String detail_post(int id) => '/detail_post/$id';
 }
 
-GoRouter AppRouter() {
+GoRouter AppRouter(AuthViewModel auth) {
   return GoRouter(
     initialLocation: AppRoutes.home,
+    refreshListenable: auth,
+    redirect: (context, state) {
+      final path = state.uri.path;
+      final needsLogin = path == AppRoutes.add_post ||
+          path == AppRoutes.profile || path.startsWith('/edit_post');
+
+      if(!auth.isLogin && needsLogin){
+        return '${AppRoutes.login}?from=${Uri.encodeComponent(state.uri.toString())}';
+      }
+      if(auth.isLogin && (path == AppRoutes.login || path == AppRoutes.signup)){
+        return state.uri.queryParameters['from'] ?? AppRoutes.home;
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: AppRoutes.home,
