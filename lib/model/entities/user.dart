@@ -18,8 +18,8 @@ class User {
       id: json['id'],
       nickname: json['nickname'],
       email: json['email'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
     );
   }
 }
