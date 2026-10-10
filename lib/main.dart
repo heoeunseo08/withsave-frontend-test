@@ -49,7 +49,6 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: '커뮤니티',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

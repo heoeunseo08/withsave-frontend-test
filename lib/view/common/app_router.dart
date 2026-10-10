@@ -22,20 +22,6 @@ class AppRoutes {
 GoRouter AppRouter(AuthViewModel auth) {
   return GoRouter(
     initialLocation: AppRoutes.home,
-    refreshListenable: auth,
-    redirect: (context, state) {
-      final path = state.uri.path;
-      final needsLogin = path == AppRoutes.add_post ||
-          path == AppRoutes.profile || path.startsWith('/edit_post');
-
-      if(!auth.isLogin && needsLogin){
-        return '${AppRoutes.login}?from=${Uri.encodeComponent(state.uri.toString())}';
-      }
-      if(auth.isLogin && (path == AppRoutes.login || path == AppRoutes.signup)){
-        return state.uri.queryParameters['from'] ?? AppRoutes.home;
-      }
-      return null;
-    },
     routes: [
       GoRoute(
         path: AppRoutes.home,
