@@ -21,13 +21,10 @@ class CommentRepository {
         .toList();
   }
 
-  Future<void> create({required int postId,required String comment}) async {
+  Future<void> create({required int postId, required String comment}) async {
     await _api.post(
-        '/comment/update/one/',
-        data:{
-          "postId": postId,
-          "comment": comment
-        }
+      '/comment/create/one/',
+      data: {"postId": postId, "comment": comment},
     );
   }
 
@@ -35,19 +32,14 @@ class CommentRepository {
     await _api.delete('/comment', query: {'commentId': commentId});
   }
 
-  Future<void> patch(
-      {
-      required int commentId,
+  Future<void> patch({
+    required int commentId,
     required String nickname,
     required String comment,
   }) async {
     await _api.patch(
       '/comment/update/one/$commentId',
-      data:{
-        "nickname": nickname,
-        "comment": comment,
-        "delete_comment": false
-      }
+      data: {"comment": comment, "delete_comment": false},
     );
   }
 }
