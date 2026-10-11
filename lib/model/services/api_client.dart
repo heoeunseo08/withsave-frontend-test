@@ -30,7 +30,7 @@ class ApiClient {
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
             await clearToken();
-            onUnauthorized?.call;
+            onUnauthorized?.call();
           }
           handler.next(error);
         },
@@ -42,24 +42,22 @@ class ApiClient {
   static const String _tokenKey = 'access_token';
 
   final Dio dio;
-  String? _token;
 
   void Function()? onUnauthorized;
 
+  // 저장소가 단일 출처이므로 매번 다시 읽어, 브라우저 저장소가 바뀌면 바로 반영된다.
   Future<String?> readToken() async {
-    if (_token != null) return _token;
     final prefs = await SharedPreferences.getInstance();
-    return _token = prefs.getString(_tokenKey);
+    await prefs.reload();
+    return prefs.getString(_tokenKey);
   }
 
   Future<void> saveToken(String token) async {
-    _token = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
   }
 
   Future<void> clearToken() async {
-    _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
   }
@@ -81,7 +79,13 @@ class ApiClient {
       final response = await request();
       return unwrap(response.data);
     } on DioException catch (e) {
-      throw ApiException(_messageOf(e), statusCode: e.response?.statusCode);
+      // 토큰을 보냈는데 401이면 세션 만료다. (로그인 실패의 401과 구분)
+      final expired = e.response?.statusCode == 401 &&
+          e.requestOptions.headers.containsKey('Authorization');
+      throw ApiException(
+        expired ? '로그인이 만료되었습니다. 다시 로그인해주세요.' : _messageOf(e),
+        statusCode: e.response?.statusCode,
+      );
     }
   }
 
