@@ -107,6 +107,12 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  Text(
+                    '${authVM.isMine(post.userId) ? '나' : '사용자 ${post.userId}'}'
+                    ' · ${formatDate(post.created_at)} · 조회 ${post.watch}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
                   HtmlWidget(
                     post.post,
                     customWidgetBuilder: (element) {
