@@ -42,12 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final postVM = context.watch<PostListViewModel>();
 
-    // 넓은 화면에서 카드가 한 화면에 다 들어와 스크롤이 안 생기면 다음 페이지를 이어서 불러온다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
       if (_scrollController.position.maxScrollExtent == 0 &&
           postVM.hasMore &&
-          !postVM.isLoading) {
+          !postVM.isLoading &&
+          postVM.error == null) {
         postVM.loadMore();
       }
     });
