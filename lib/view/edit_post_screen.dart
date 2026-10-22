@@ -78,7 +78,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
             actions: [
               if (authVM.isLogin)
                 TextButton(
-                  onPressed: editorVM.isSubmitting || editorVM.isLoading ? null : save,
+                  onPressed: editorVM.isSubmitting || editorVM.isLoading || editorVM.loadFailed
+                      ? null
+                      : save,
                   child: Text(editorVM.isEdit ? '수정하기' : '게시하기'),
                 ),
             ],
@@ -87,6 +89,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
               ? NeedLogin.needLoginWidget(context)
               : editorVM.isLoading
               ? const Center(child: CircularProgressIndicator())
+              : editorVM.loadFailed
+              ? Center(child: Text(editorVM.error ?? '게시글을 불러오지 못했습니다.'))
               : Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),

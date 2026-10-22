@@ -11,6 +11,7 @@ class PostEditorViewModel extends ChangeNotifier {
   String _initText = '';
   bool _isLoading;
   bool _isSubmitting = false;
+  bool _loadFailed = false;
   String? _error;
 
   String get initTitle => _initTitle;
@@ -23,6 +24,9 @@ class PostEditorViewModel extends ChangeNotifier {
 
   bool get isSubmitting => _isSubmitting;
 
+  // 수정할 글을 못 불러왔으면 빈 칸으로 저장해 원래 글을 덮지 않도록 편집을 막는다.
+  bool get loadFailed => _loadFailed;
+
   String? get error => _error;
 
   Future<void> load() async {
@@ -34,6 +38,7 @@ class PostEditorViewModel extends ChangeNotifier {
       _initText = _htmlToText(post.post);
     }catch(e){
       _error = e.toString();
+      _loadFailed = true;
     }finally{
       _isLoading = false;
       notifyListeners();

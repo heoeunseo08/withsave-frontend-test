@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:withsave_frontend_test/view/detail_post_screen.dart';
 import 'package:withsave_frontend_test/view/edit_post_screen.dart';
@@ -45,14 +46,20 @@ GoRouter AppRouter(AuthViewModel auth) {
       ),
       GoRoute(
         path: '/detail_post/:id',
+        redirect: _homeIfBadId,
         builder: (context, state) =>
             DetailPostScreen(postId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/edit_post/:id',
+        redirect: _homeIfBadId,
         builder: (context, state) =>
             EditPostScreen(postId: int.parse(state.pathParameters['id']!)),
       ),
     ],
   );
 }
+
+// 주소에 숫자가 아닌 id가 들어오면 오류 화면 대신 홈으로 보낸다.
+String? _homeIfBadId(BuildContext context, GoRouterState state) =>
+    int.tryParse(state.pathParameters['id']!) == null ? AppRoutes.home : null;
