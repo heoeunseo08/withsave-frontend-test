@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../view_model/auth_view_model.dart';
+import 'common/app_router.dart';
 import 'common/message.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -174,7 +175,7 @@ class _SignupScreenState extends State<SignupScreen> {
               if (!mounted) return;
               if (status) {
                 showMessage(context, "회원가입이 완료되었습니다.");
-                context.pop(true);
+                context.canPop() ? context.pop(true) : context.go(AppRoutes.home);
               } else {
                 showMessage(context, authVM.error ?? "회원가입에 실패 하셨습니다.");
               }

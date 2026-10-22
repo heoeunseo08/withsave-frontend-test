@@ -45,7 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text("아직 회원가입 안 하셨다면?  "),
               GestureDetector(
-                onTap: () => context.push(AppRoutes.signup),
+                onTap: () async {
+                  final signedUp = await context.push<bool>(AppRoutes.signup);
+                  // 회원가입하면 이미 로그인된 상태이므로 로그인 화면도 함께 닫는다.
+                  if (signedUp == true && mounted) _close();
+                },
                 child: Text(
                   "회원가입 하러가기",
                   style: TextStyle(
@@ -60,6 +64,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  // 주소로 바로 들어와 돌아갈 화면이 없으면 홈으로 보낸다.
+  void _close() => context.canPop() ? context.pop() : context.go(AppRoutes.home);
 
   Widget loginBox(AuthViewModel authVM) {
     return Container(
@@ -97,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               if (nickname.isEmpty || password.isEmpty) {
                 showMessage(context, "nickname이나 password를 입력해주세요.");
+                return;
               }
 
               final success = await authVM.login(
@@ -105,8 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
               );
               if (!mounted) return;
               if (success) {
-                showMessage(context, "기모취");
-                context.pop();
+                showMessage(context, "로그인되었습니다.");
+                _close();
               } else {
                 showMessage(context, authVM.error ?? "로그인에 실패 하셨습니다.");
                 return;

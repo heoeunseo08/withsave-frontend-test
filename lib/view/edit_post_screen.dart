@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:withsave_frontend_test/model/repositories/post_repository.dart';
+import 'package:withsave_frontend_test/view/common/app_router.dart';
 import 'package:withsave_frontend_test/view/common/message.dart';
 import 'package:withsave_frontend_test/view/common/need_login.dart';
 import 'package:withsave_frontend_test/view_model/auth_view_model.dart';
@@ -57,7 +58,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
     if (success) {
       context.read<PostListViewModel>().refresh();
       showMessage(context, editorVM.isEdit ? '게시글을 수정했습니다.' : '게시글을 작성했습니다.');
-      context.pop();
+      // 주소로 바로 들어와 돌아갈 화면이 없으면 홈으로 보낸다.
+      context.canPop() ? context.pop() : context.go(AppRoutes.home);
     } else {
       showMessage(context, editorVM.error ?? '저장에 실패했습니다.');
     }
