@@ -36,13 +36,17 @@ class PostDetailViewModel extends ChangeNotifier {
 
   Future<bool> delete() async {
     _isLoading = true;
+    _error = null;
+    notifyListeners();
     try{
       await _repo.delete(postId: postId);
       return true;
     }catch(e){
       _error = e.toString();
-      notifyListeners();
       return false;
+    }finally{
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
