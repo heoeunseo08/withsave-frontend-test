@@ -15,6 +15,8 @@ class PostListViewModel extends ChangeNotifier {
   String? _error;
   String _order = 'DESC';
   String _keyword = '';
+  // refresh마다 올라가서, 이전 조건으로 보낸 요청의 응답을 버리는 데 쓴다.
+  int _generation = 0;
 
   List<PostSummary> get post => List.unmodifiable(_post);
 
@@ -29,6 +31,7 @@ class PostListViewModel extends ChangeNotifier {
   String get keyword => _keyword;
 
   Future<void> refresh() async {
+    _generation++;
     _post.clear();
     _hasMore = true;
     _isLoading = false;
@@ -37,6 +40,7 @@ class PostListViewModel extends ChangeNotifier {
 
   Future<void> loadMore() async {
     if (_isLoading || !_hasMore) return;
+    final generation = _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -49,13 +53,17 @@ class PostListViewModel extends ChangeNotifier {
               take: _task,
               order: _order,
             );
+      if (generation != _generation) return;
       _post.addAll(page);
       _hasMore = page.length == _task;
     } catch (e) {
+      if (generation != _generation) return;
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (generation == _generation) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 

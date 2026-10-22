@@ -14,6 +14,8 @@ class CommentViewModel extends ChangeNotifier   {
   bool _isSubmitting = false;
   bool _hasMore = true;
   String? _error;
+  // load마다 올라가서, 이전에 보낸 요청의 응답을 버리는 데 쓴다.
+  int _generation = 0;
 
   List<Comment> get comments => _loaded.where((c) => !c.delete_comment).toList();
   bool get isLoading => _isLoading;
@@ -22,6 +24,7 @@ class CommentViewModel extends ChangeNotifier   {
   String? get error => _error;
 
   Future<void> load() async {
+    _generation++;
     _loaded.clear();
     _hasMore = true;
     _isLoading = false;
@@ -30,6 +33,7 @@ class CommentViewModel extends ChangeNotifier   {
 
   Future<void> loadMore() async {
     if (_isLoading || !_hasMore) return;
+    final generation = _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -39,13 +43,17 @@ class CommentViewModel extends ChangeNotifier   {
         take: _take,
         postId: postId,
       );
+      if (generation != _generation) return;
       _loaded.addAll(page);
       _hasMore = page.length == _take;
     } catch (e) {
+      if (generation != _generation) return;
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (generation == _generation) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
