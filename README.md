@@ -1,17 +1,89 @@
 # withsave_frontend_test
 
-A new Flutter project.
+프런트엔드 테스트용 [백엔드 API](https://front-test.alex-choi.com/api-docs)를 사용하는 커뮤니티 앱입니다. Flutter로 만들었고 웹과 모바일(Android, iOS)에서 동작합니다.
 
-## Getting Started
+## 실행
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run -d chrome      # 웹
+flutter run                # 연결된 에뮬레이터·기기
+```
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter 3.47 (Dart 3.13) 기준
+- API 주소는 `lib/model/services/api_client.dart`의 `baseUrl`에 있습니다.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## 화면별 기능
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 홈 (`/`)
+- 게시글을 카드 그리드로 보여줍니다. 카드에는 제목과 조회수가 표시됩니다.
+- 끝까지 스크롤하면 다음 10개를 이어서 불러오고, 더 없으면 멈춥니다. 화면이 넓어서 스크롤이 생기지 않으면 자동으로 더 불러옵니다.
+- 검색창에 제목 키워드를 입력하고 엔터를 누르면 검색합니다. 비우고 엔터를 누르면 전체 목록으로 돌아갑니다.
+- 정렬 버튼으로 최신순·오래된순을 바꿉니다.
+- 당겨서 새로고침할 수 있고, 불러오기에 실패하면 오류 메시지와 "다시 시도" 버튼이 나옵니다.
+- 오른쪽 위 아이콘은 프로필, 오른쪽 아래 + 버튼은 글쓰기로 이동합니다.
+
+### 로그인 (`/login`)
+- 닉네임과 비밀번호로 로그인합니다. API가 닉네임 로그인만 제공합니다.
+- 성공하면 원래 보던 화면으로 돌아갑니다. 주소로 바로 들어왔으면 홈으로 갑니다.
+- "회원가입 하러가기"로 회원가입 화면으로 이동합니다.
+
+### 회원가입 (`/signup`)
+- 이메일, 닉네임, 비밀번호를 입력해 가입합니다.
+- 이메일과 닉네임은 각각 "중복 확인"을 눌러야 하고, 확인 후 값을 고치면 다시 확인해야 합니다.
+- 가입하면 바로 로그인되고, 로그인 화면까지 함께 닫혀 원래 화면으로 돌아갑니다.
+
+### 프로필 (`/profile`)
+- 닉네임, 이메일, 가입일, 수정일을 보여줍니다.
+- "수정하기"에서 닉네임이나 비밀번호를 바꿉니다. 빈 칸은 바꾸지 않고, 새 닉네임은 중복 확인 후 저장합니다.
+- 로그아웃, 계정 삭제를 할 수 있으며 둘 다 확인 팝업을 거칩니다.
+- 로그인하지 않았으면 로그인 안내가 나옵니다.
+
+### 게시글 상세 (`/detail_post/{id}`)
+- 제목, 작성자(내 글은 "나"), 작성일, 조회수, HTML 본문을 보여줍니다.
+- 내 글이면 오른쪽 위 메뉴에서 수정·삭제할 수 있습니다.
+- 댓글을 10개씩 불러오고 "댓글 더보기"로 이어서 봅니다.
+- 로그인하면 댓글을 쓸 수 있고, 내 댓글은 수정·삭제할 수 있습니다. 로그인하지 않았으면 "로그인하고 댓글 남기기" 버튼이 나옵니다.
+
+### 게시글 작성·수정 (`/add_post`, `/edit_post/{id}`)
+- 제목과 본문을 입력해 게시합니다. 둘 중 하나라도 비어 있으면 저장하지 않습니다.
+- 본문의 줄바꿈은 HTML로 바꿔 저장하므로 상세 화면에서도 그대로 보입니다.
+- 수정할 때는 기존 제목과 본문을 채워서 보여줍니다.
+- 저장하면 홈 목록을 새로 불러오고 이전 화면으로 돌아갑니다.
+- 로그인하지 않았으면 로그인 안내가 나옵니다. 로그인하고 돌아오면 써 둔 내용이 그대로 남아 있습니다.
+
+### 모든 화면 공통
+- 로그인 상태는 새로고침이나 앱 재시작 후에도 유지됩니다.
+- 토큰이 만료되거나 잘못되면 어느 화면에서든 "로그인이 만료되었습니다." 안내를 띄우고 로그아웃합니다.
+
+## 구조
+
+MVVM 구조이고 상태 관리는 Provider(`ChangeNotifier`)를 씁니다.
+
+```
+lib/
+├── main.dart                 의존성 연결, 전역 스낵바(세션 만료 안내)
+├── model/
+│   ├── entities/             User, Post, Comment
+│   ├── repositories/         API 호출을 기능별로 묶음 (user, post, comment)
+│   └── services/api_client.dart  Dio 설정, 토큰 저장·첨부, 응답 풀기, 오류 메시지
+├── view_model/               화면 상태 (로그인, 목록, 상세, 작성·수정, 댓글)
+└── view/
+    ├── common/               라우터(go_router), 메시지, 로그인 필요 안내
+    └── *_screen.dart         홈, 로그인, 회원가입, 프로필, 상세, 작성·수정
+```
+
+| 패키지 | 용도 |
+|---|---|
+| `provider` | 상태 관리 |
+| `dio` | HTTP 통신, 토큰 첨부와 401 처리 |
+| `go_router` | 화면 이동 (웹 주소와 연동) |
+| `shared_preferences` | 토큰 저장 |
+| `flutter_widget_from_html` | 게시글 HTML 본문 표시 |
+
+## 알려진 서버 이슈
+
+| 현상 | 앱 대응 |
+|---|---|
+| 잘못되거나 만료된 토큰에 401 대신 500(`jwt malformed`, `invalid signature`)을 돌려줌 | 토큰을 보낸 요청이 500이고 메시지에 `jwt`나 `signature`가 있으면 만료로 처리합니다 (`ApiClient._isTokenError`). 서버가 401로 바뀌면 지웁니다. |
+| 없는 게시글을 조회하면 404 대신 500(`Cannot read properties of null`)을 돌려줌 | 서버 메시지를 그대로 표시합니다. |
