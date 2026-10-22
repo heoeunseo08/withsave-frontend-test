@@ -130,9 +130,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              "취소",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          TextButton(
             onPressed: () async {
               final nickname = _nicknameController.text.trim();
               final password = _passwordController.text;
+
+              final user = authVM.user;
+              if (user == null) {
+                Navigator.pop(dialogContext);
+                return;
+              }
 
               if (nickname.isEmpty && password.isEmpty) {
                 showMessage(context, "nickname이나 password를 입력해주세요.");
@@ -140,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
 
               // 닉네임을 바꿀 때는 중복 확인부터 (true면 이미 사용 중)
-              if (nickname.isNotEmpty && nickname != authVM.user!.nickname) {
+              if (nickname.isNotEmpty && nickname != user.nickname) {
                 final taken = await authVM.isCheckNickname(nickname);
                 if (!mounted) return;
                 if (taken) {
@@ -159,19 +172,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (success) {
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 showMessage(context, "프로필을 수정했습니다.");
+              } else if (!authVM.isLogin) {
+                // 세션이 만료됐으면 안내는 App이 띄우므로 다이얼로그만 닫는다.
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               } else {
                 // 실패하면 다이얼로그를 닫지 않고 다시 시도할 수 있게 둔다.
                 showMessage(context, authVM.error ?? "프로필 수정에 실패 하셨습니다.");
               }
             },
             child: Text("수정"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              "취소",
-              style: TextStyle(color: Colors.black),
-            ),
           ),
         ],
       ),
@@ -185,6 +194,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text('정말 로그아웃 하시겠습니까?'),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              "취소",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               context.go(AppRoutes.home); // 먼저 홈으로 보낸 뒤 로그아웃
@@ -193,13 +209,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               "로그아웃",
               style: TextStyle(color: Colors.red),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              "취소",
-              style: TextStyle(color: Colors.black),
             ),
           ),
         ],
@@ -215,6 +224,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Text('삭제한 계정은 복구할 수 없습니다.'),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              "취소",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               final success = await authVM.deleteProfile();
@@ -229,13 +245,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               "계정 삭제",
               style: TextStyle(color: Colors.red),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              "취소",
-              style: TextStyle(color: Colors.black),
             ),
           ),
         ],

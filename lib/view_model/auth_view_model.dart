@@ -10,6 +10,7 @@ class AuthViewModel extends ChangeNotifier {
   User? _user;
   bool _isLoading = false;
   String? _error;
+  bool _sessionExpired = false;
 
   User? get user => _user;
 
@@ -18,6 +19,11 @@ class AuthViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   String? get error => _error;
+
+  // 세션 만료를 앱 전체에 한 번만 알리기 위한 표시. App이 읽고 바로 지운다.
+  bool get sessionExpired => _sessionExpired;
+
+  void consumeSessionExpired() => _sessionExpired = false;
 
   bool isMine(int userId) => _user?.id == userId;
 
@@ -78,7 +84,7 @@ class AuthViewModel extends ChangeNotifier {
   void onSessionExpired() {
     if (_user == null) return;
     _user = null;
-    _error = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+    _sessionExpired = true;
     notifyListeners();
   }
 

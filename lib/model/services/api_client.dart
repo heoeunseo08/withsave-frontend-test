@@ -28,7 +28,7 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
+          if (error.response?.statusCode == 401 || _isTokenError(error)) {
             await clearToken();
             onUnauthorized?.call();
           }
@@ -80,8 +80,9 @@ class ApiClient {
       return unwrap(response.data);
     } on DioException catch (e) {
       // 토큰을 보냈는데 401이면 세션 만료다. (로그인 실패의 401과 구분)
-      final expired = e.response?.statusCode == 401 &&
-          e.requestOptions.headers.containsKey('Authorization');
+      final expired = (e.response?.statusCode == 401 &&
+              e.requestOptions.headers.containsKey('Authorization')) ||
+          _isTokenError(e);
       throw ApiException(
         expired ? '로그인이 만료되었습니다. 다시 로그인해주세요.' : _messageOf(e),
         statusCode: e.response?.statusCode,
@@ -97,6 +98,15 @@ class ApiClient {
       value = value[key];
     }
     return value;
+  }
+
+  // 임시 처리: 서버가 토큰 검증 실패를 401 대신 500("jwt malformed", "jwt expired",
+  // "invalid signature")으로 돌려준다. 서버가 401로 바뀌면 지운다.
+  static bool _isTokenError(DioException e) {
+    if (e.response?.statusCode != 500) return false;
+    if (!e.requestOptions.headers.containsKey('Authorization')) return false;
+    final message = _messageOf(e).toLowerCase();
+    return message.contains('jwt') || message.contains('signature');
   }
 
   static String _messageOf(DioException e) {

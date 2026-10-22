@@ -44,11 +44,37 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final GoRouter _router = AppRouter(context.read<AuthViewModel>());
+  final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey();
+  late final AuthViewModel _auth = context.read<AuthViewModel>();
+  late final GoRouter _router = AppRouter(_auth);
+
+  @override
+  void initState() {
+    super.initState();
+    _auth.addListener(_onAuthChanged);
+  }
+
+  @override
+  void dispose() {
+    _auth.removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  // 어느 화면에서 만료되든 한 곳에서 안내한다.
+  void _onAuthChanged() {
+    if (!_auth.sessionExpired) return;
+    _auth.consumeSessionExpired();
+    _messengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('로그인이 만료되었습니다. 다시 로그인해주세요.')),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      scaffoldMessengerKey: _messengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
