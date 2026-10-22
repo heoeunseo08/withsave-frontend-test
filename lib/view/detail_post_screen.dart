@@ -108,7 +108,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   Text(
-                    '${authVM.isMine(post.userId) ? '나' : '사용자 ${post.userId}'}'
+                    '${authVM.isMine(post.userId) ? '나' : post.nickname ?? '사용자 ${post.userId}'}'
                     ' · ${formatDate(post.created_at)} · 조회 ${post.watch}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
@@ -248,24 +248,16 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     ok ? _commentController.clear() : showMessage(context, commentVM.error ?? '댓글 작성에 실패했습니다.');
   }
 
-  //에러(동작 불가)
   Future<void> editComment(Comment comment) async {
-    final controller = TextEditingController(text: comment.comment);
     final text = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('댓글 수정'),
-        content: TextField(controller: controller, autofocus: true),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('취소')),
-          TextButton(onPressed: () => Navigator.pop(dialogContext, controller.text), child: const Text('저장')),
-        ],
-      ),
+      builder: (_) => _EditCommentDialog(initialText: comment.comment),
     );
-    controller.dispose();
     if (text == null || text.trim().isEmpty || !mounted) return;
 
-    final nickname = context.read<AuthViewModel>().user!.nickname;
+    // 다이얼로그가 떠 있는 사이 세션이 만료됐을 수 있다.
+    final nickname = context.read<AuthViewModel>().user?.nickname;
+    if (nickname == null) return;
     if (!await commentVM.patch(comment.commitId, nickname, text) && mounted) {
       showMessage(context, commentVM.error ?? '댓글 수정에 실패했습니다.');
     }
@@ -294,5 +286,38 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   String formatDate(String time) {
     final date = DateTime.parse(time).toLocal();
     return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+  }
+}
+
+
+// 닫히는 애니메이션 동안에도 TextField가 컨트롤러를 쓰므로, 다이얼로그가 직접 들고 있다가 사라질 때 정리한다.
+class _EditCommentDialog extends StatefulWidget {
+  const _EditCommentDialog({required this.initialText});
+
+  final String initialText;
+
+  @override
+  State<_EditCommentDialog> createState() => _EditCommentDialogState();
+}
+
+class _EditCommentDialogState extends State<_EditCommentDialog> {
+  late final TextEditingController _controller = TextEditingController(text: widget.initialText);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('댓글 수정'),
+      content: TextField(controller: _controller, autofocus: true),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('취소')),
+        TextButton(onPressed: () => Navigator.pop(context, _controller.text), child: const Text('저장')),
+      ],
+    );
   }
 }

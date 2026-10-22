@@ -24,7 +24,7 @@ class PostSummary {
 class Post {
   final int id;
   final int userId;
-  final String nickname;
+  final String? nickname; // 상세 응답에 없을 수 있다
   final String title;
   final String post;
   final int watch;
@@ -34,7 +34,7 @@ class Post {
   Post({
     required this.id,
     required this.userId,
-    required this.nickname,
+    this.nickname,
     required this.title,
     required this.post,
     required this.watch,
@@ -46,7 +46,7 @@ class Post {
     return Post(
       id: json['id'],
       userId: json['userId'],
-      nickname: json['nickname'] ?? '알 수 없음',
+      nickname: json['nickname'],
       title: json['title'],
       post: json['post'],
       watch: json['watch'],
