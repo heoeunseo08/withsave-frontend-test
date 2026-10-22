@@ -85,5 +85,5 @@ lib/
 
 | 현상 | 앱 대응 |
 |---|---|
-| 잘못되거나 만료된 토큰에 401 대신 500(`jwt malformed`, `invalid signature`)을 돌려줌 | 토큰을 보낸 요청이 500이고 메시지에 `jwt`나 `signature`가 있으면 만료로 처리합니다 (`ApiClient._isTokenError`). 서버가 401로 바뀌면 지웁니다. |
+| 잘못되거나 만료된 토큰에 401 대신 500(`jwt malformed`, `invalid signature`)을 돌려줌 | 토큰을 보낸 요청이 500이고 메시지에 `jwt`나 `signature`가 있으면 만료로 처리합니다 (`ApiClient.isTokenError`). 서버가 401로 바뀌면 지웁니다. |
 | 없는 게시글을 조회하면 404 대신 500(`Cannot read properties of null`)을 돌려줌 | 서버 메시지를 그대로 표시합니다. |

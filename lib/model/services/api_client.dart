@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiException implements Exception {
@@ -28,7 +29,7 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401 || _isTokenError(error)) {
+          if (error.response?.statusCode == 401 || isTokenError(error)) {
             await clearToken();
             onUnauthorized?.call();
           }
@@ -82,7 +83,7 @@ class ApiClient {
       // 토큰을 보냈는데 401이면 세션 만료다. (로그인 실패의 401과 구분)
       final expired = (e.response?.statusCode == 401 &&
               e.requestOptions.headers.containsKey('Authorization')) ||
-          _isTokenError(e);
+          isTokenError(e);
       throw ApiException(
         expired ? '로그인이 만료되었습니다. 다시 로그인해주세요.' : _messageOf(e),
         statusCode: e.response?.statusCode,
@@ -102,7 +103,8 @@ class ApiClient {
 
   // 임시 처리: 서버가 토큰 검증 실패를 401 대신 500("jwt malformed", "jwt expired",
   // "invalid signature")으로 돌려준다. 서버가 401로 바뀌면 지운다.
-  static bool _isTokenError(DioException e) {
+  @visibleForTesting
+  static bool isTokenError(DioException e) {
     if (e.response?.statusCode != 500) return false;
     if (!e.requestOptions.headers.containsKey('Authorization')) return false;
     final message = _messageOf(e).toLowerCase();

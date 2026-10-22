@@ -35,7 +35,7 @@ class PostEditorViewModel extends ChangeNotifier {
     try{
       final post = await _repo.getDetail(postId: postId!);
       _initTitle = post.title;
-      _initText = _htmlToText(post.post);
+      _initText = htmlToText(post.post);
     }catch(e){
       _error = e.toString();
       _loadFailed = true;
@@ -55,7 +55,7 @@ class PostEditorViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final html = _textToHtml(text);
+      final html = textToHtml(text);
       if (isEdit) {
         await _repo.patch(postId: postId!, title: title, post: html);
       } else {
@@ -71,7 +71,8 @@ class PostEditorViewModel extends ChangeNotifier {
     }
   }
 
-  static String _textToHtml(String text) {
+  @visibleForTesting
+  static String textToHtml(String text) {
     final escaped = text
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
@@ -84,12 +85,18 @@ class PostEditorViewModel extends ChangeNotifier {
         .join();
   }
 
-  static String _htmlToText(String html) => html
-      .replaceAll(RegExp(r'<br\s*/?>'), '')
+  // 다른 클라이언트가 쓴 글도 받으므로 단락 안의 <br>과 흔한 엔티티까지 되돌린다.
+  @visibleForTesting
+  static String htmlToText(String html) => html
+      .replaceAll(RegExp(r'<p>\s*<br\s*/?>\s*</p>'), '\n') // 빈 줄
+      .replaceAll(RegExp(r'<br\s*/?>'), '\n')
       .replaceAll('</p>', '\n')
       .replaceAll(RegExp(r'<[^>]+>'), '')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
       .replaceAll('&lt;', '<')
       .replaceAll('&gt;', '>')
-      .replaceAll('&amp;', '&')
+      .replaceAll('&amp;', '&') // 마지막에 해야 &amp;lt; 같은 글자가 두 번 풀리지 않는다
       .trim();
 }
