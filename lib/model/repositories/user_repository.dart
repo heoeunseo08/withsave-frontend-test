@@ -73,8 +73,7 @@ class UserRepository {
 
   Future<bool> checkNickname({required String nickname}) async {
     final result = await _api.get(
-      '/users/check/nickname/exist/nickname',
-      query: {"nickname": nickname},
+      '/users/check/nickname/exist/${Uri.encodeComponent(nickname)}',
     );
     return result == true;
   }
