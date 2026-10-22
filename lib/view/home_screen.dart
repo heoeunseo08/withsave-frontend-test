@@ -23,9 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _scrollController.addListener(
           () {
-        if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200) {
-          context.read<PostListViewModel>().loadMore();
+        final postVM = context.read<PostListViewModel>();
+        // 실패한 뒤에는 스크롤마다 다시 요청하지 않고 "다시 시도" 버튼에 맡긴다.
+        if (postVM.error == null &&
+            _scrollController.position.pixels >=
+                _scrollController.position.maxScrollExtent - 200) {
+          postVM.loadMore();
         }
       },
     );
@@ -149,8 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget postItem(PostSummary post) {
-    return GestureDetector(
+    // InkWell은 GestureDetector와 달리 키보드 포커스와 화면 낭독기의 버튼 정보를 준다.
+    return InkWell(
       onTap: () => context.push(AppRoutes.detail_post(post.id)),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: EdgeInsets.all(20),
         decoration: BoxDecoration(

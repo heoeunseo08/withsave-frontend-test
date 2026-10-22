@@ -44,8 +44,8 @@ class _SignupScreenState extends State<SignupScreen> {
             mainAxisAlignment: .center,
             children: [
               Text("이미 회원가입하셨다면?  "),
-              GestureDetector(
-                onTap: () => context.pop(),
+              TextButton(
+                onPressed: () => context.pop(),
                 child: Text(
                   "로그인 하러가기",
                   style: TextStyle(

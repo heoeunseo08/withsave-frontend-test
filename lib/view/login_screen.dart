@@ -44,8 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: .center,
             children: [
               Text("아직 회원가입 안 하셨다면?  "),
-              GestureDetector(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   final signedUp = await context.push<bool>(AppRoutes.signup);
                   // 회원가입하면 이미 로그인된 상태이므로 로그인 화면도 함께 닫는다.
                   if (signedUp == true && mounted) _close();
