@@ -6,7 +6,6 @@ import 'package:withsave_frontend_test/view/home_screen.dart';
 import 'package:withsave_frontend_test/view/login_screen.dart';
 import 'package:withsave_frontend_test/view/profile_screen.dart';
 import 'package:withsave_frontend_test/view/signup_screen.dart';
-import 'package:withsave_frontend_test/view_model/auth_view_model.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -20,7 +19,7 @@ class AppRoutes {
   static String detail_post(int id) => '/detail_post/$id';
 }
 
-GoRouter AppRouter(AuthViewModel auth) {
+GoRouter AppRouter() {
   return GoRouter(
     initialLocation: AppRoutes.home,
     routes: [

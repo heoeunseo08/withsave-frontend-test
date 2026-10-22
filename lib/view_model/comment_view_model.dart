@@ -57,18 +57,15 @@ class CommentViewModel extends ChangeNotifier   {
     }
   }
 
-  Future<bool> create(String text) =>
-      _submit(() => _repo.create(postId: postId, comment: text.trim()), text);
+  Future<bool> create(String text) async => text.trim().isNotEmpty &&
+      await _submit(() => _repo.create(postId: postId, comment: text.trim()));
 
-  Future<bool> patch(int commentId, String nickname, String text) => _submit(
-        () => _repo.patch(commentId: commentId, nickname: nickname, comment: text.trim()),
-    text,
-  );
+  Future<bool> patch(int commentId, String text) async => text.trim().isNotEmpty &&
+      await _submit(() => _repo.patch(commentId: commentId, comment: text.trim()));
 
-  Future<bool> delete(int commentId) => _submit(() => _repo.delete( commentId: commentId), 'x');
+  Future<bool> delete(int commentId) => _submit(() => _repo.delete(commentId: commentId));
 
-  Future<bool> _submit(Future<void> Function() task, String text) async {
-    if (text.trim().isEmpty) return false;
+  Future<bool> _submit(Future<void> Function() task) async {
     _isSubmitting = true;
     _error = null;
     notifyListeners();

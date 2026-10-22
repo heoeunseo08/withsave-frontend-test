@@ -5,6 +5,7 @@ import 'package:withsave_frontend_test/view/common/need_login.dart';
 import 'package:withsave_frontend_test/view_model/auth_view_model.dart';
 
 import 'common/app_router.dart';
+import 'common/format_date.dart';
 import 'common/message.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -250,10 +251,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
-  }
-
-  String formatDate(String time) {
-    final date = DateTime.parse(time).toLocal();
-    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
   }
 }

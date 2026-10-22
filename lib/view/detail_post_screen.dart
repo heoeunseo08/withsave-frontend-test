@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:withsave_frontend_test/model/repositories/comment_repository.dart';
 import 'package:withsave_frontend_test/model/repositories/post_repository.dart';
 import 'package:withsave_frontend_test/view/common/app_router.dart';
+import 'package:withsave_frontend_test/view/common/format_date.dart';
 import 'package:withsave_frontend_test/view/common/message.dart';
 import 'package:withsave_frontend_test/view_model/auth_view_model.dart';
 import 'package:withsave_frontend_test/view_model/comment_view_model.dart';
@@ -254,11 +255,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       builder: (_) => _EditCommentDialog(initialText: comment.comment),
     );
     if (text == null || text.trim().isEmpty || !mounted) return;
-
-    // 다이얼로그가 떠 있는 사이 세션이 만료됐을 수 있다.
-    final nickname = context.read<AuthViewModel>().user?.nickname;
-    if (nickname == null) return;
-    if (!await commentVM.patch(comment.commitId, nickname, text) && mounted) {
+    if (!await commentVM.patch(comment.commitId, text) && mounted) {
       showMessage(context, commentVM.error ?? '댓글 수정에 실패했습니다.');
     }
   }
@@ -281,11 +278,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     if (!await commentVM.delete(comment.commitId) && mounted) {
       showMessage(context, commentVM.error ?? '댓글 삭제에 실패했습니다.');
     }
-  }
-
-  String formatDate(String time) {
-    final date = DateTime.parse(time).toLocal();
-    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
   }
 }
 

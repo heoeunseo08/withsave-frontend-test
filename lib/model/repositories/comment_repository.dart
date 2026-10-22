@@ -34,7 +34,6 @@ class CommentRepository {
 
   Future<void> patch({
     required int commentId,
-    required String nickname,
     required String comment,
   }) async {
     await _api.patch(

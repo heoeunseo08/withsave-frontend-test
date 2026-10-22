@@ -46,7 +46,7 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey();
   late final AuthViewModel _auth = context.read<AuthViewModel>();
-  late final GoRouter _router = AppRouter(_auth);
+  late final GoRouter _router = AppRouter();
 
   @override
   void initState() {
