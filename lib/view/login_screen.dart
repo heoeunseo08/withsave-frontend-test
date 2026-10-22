@@ -90,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           TextFormField(
             controller: _passwordController,
+            obscureText: true,
             decoration: InputDecoration(
               hintText: 'password',
               border: OutlineInputBorder(
