@@ -1,6 +1,6 @@
 # withsave_frontend_test
 
-프런트엔드 테스트용 [백엔드 API](https://front-test.alex-choi.com/api-docs)를 사용하는 커뮤니티 앱입니다. Flutter로 만들었고 웹과 모바일(Android, iOS)에서 동작합니다.
+프런트엔드 테스트용 [백엔드 API](https://front-test.alex-choi.com/api-docs)를 사용하는 커뮤니티 앱입니다. Flutter로 만들었고 웹에서 동작합니다.
 
 ## 실행
 
@@ -80,10 +80,3 @@ lib/
 | `go_router` | 화면 이동 (웹 주소와 연동) |
 | `shared_preferences` | 토큰 저장 |
 | `flutter_widget_from_html` | 게시글 HTML 본문 표시 |
-
-## 알려진 서버 이슈
-
-| 현상 | 앱 대응 |
-|---|---|
-| 잘못되거나 만료된 토큰에 401 대신 500(`jwt malformed`, `invalid signature`)을 돌려줌 | 토큰을 보낸 요청이 500이고 메시지에 `jwt`나 `signature`가 있으면 만료로 처리합니다 (`ApiClient.isTokenError`). 서버가 401로 바뀌면 지웁니다. |
-| 없는 게시글을 조회하면 404 대신 500(`Cannot read properties of null`)을 돌려줌 | 서버 메시지를 그대로 표시합니다. |
