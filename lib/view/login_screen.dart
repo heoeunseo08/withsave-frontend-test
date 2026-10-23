@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: authVM.isLoading ? null : () async {
               final nickname = _nicknameController.text.trim();
               final password = _passwordController.text;
 

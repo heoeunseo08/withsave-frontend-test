@@ -86,7 +86,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
             ],
           ),
           body: !authVM.isLogin
-              ? NeedLogin.needLoginWidget(context)
+              ? needLoginWidget(context)
               : editorVM.isLoading
               ? const Center(child: CircularProgressIndicator())
               : editorVM.loadFailed

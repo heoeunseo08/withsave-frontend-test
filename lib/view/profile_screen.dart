@@ -18,6 +18,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  // 닉네임 중복 확인은 authVM.isLoading을 켜지 않으므로, 두 번 눌림을 여기서 막는다.
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -34,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Align(alignment: .centerStart, child: Text("프로필 페이지")),
       ),
       body: !authVM.isLogin
-          ? NeedLogin.needLoginWidget(context)
+          ? needLoginWidget(context)
           : Padding(
         padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 24),
         child: Column(
@@ -139,46 +141,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () async {
-              final nickname = _nicknameController.text.trim();
-              final password = _passwordController.text;
-
-              final user = authVM.user;
-              if (user == null) {
-                Navigator.pop(dialogContext);
-                return;
-              }
-
-              if (nickname.isEmpty && password.isEmpty) {
-                showMessage(context, "nickname이나 password를 입력해주세요.");
-                return;
-              }
-
-              // 닉네임을 바꿀 때는 중복 확인부터 (true면 이미 사용 중)
-              if (nickname.isNotEmpty && nickname != user.nickname) {
-                final taken = await authVM.isCheckNickname(nickname);
-                if (!mounted) return;
-                if (taken) {
-                  showMessage(context, "이미 사용 중인 nickname입니다.");
-                  return;
-                }
-              }
-
-              // 빈 칸은 null로 보내서 그 항목은 바꾸지 않는다.
-              final success = await authVM.updateProfile(
-                nickname: nickname.isEmpty ? null : nickname,
-                password: password.isEmpty ? null : password,
-              );
-              if (!mounted) return;
-
-              if (success) {
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-                showMessage(context, "프로필을 수정했습니다.");
-              } else if (!authVM.isLogin) {
-                // 세션이 만료됐으면 안내는 App이 띄우므로 다이얼로그만 닫는다.
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              } else {
-                // 실패하면 다이얼로그를 닫지 않고 다시 시도할 수 있게 둔다.
-                showMessage(context, authVM.error ?? "프로필 수정에 실패 하셨습니다.");
+              if (_saving) return;
+              _saving = true;
+              try {
+                await _saveProfile(authVM, dialogContext);
+              } finally {
+                _saving = false;
               }
             },
             child: Text("수정"),
@@ -186,6 +154,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _saveProfile(AuthViewModel authVM, BuildContext dialogContext) async {
+    final nickname = _nicknameController.text.trim();
+    final password = _passwordController.text;
+
+    final user = authVM.user;
+    if (user == null) {
+      Navigator.pop(dialogContext);
+      return;
+    }
+
+    if (nickname.isEmpty && password.isEmpty) {
+      showMessage(context, "nickname이나 password를 입력해주세요.");
+      return;
+    }
+
+    // 닉네임을 바꿀 때는 중복 확인부터 (true면 이미 사용 중)
+    if (nickname.isNotEmpty && nickname != user.nickname) {
+      final taken = await authVM.isCheckNickname(nickname);
+      if (!mounted) return;
+      if (taken) {
+        showMessage(context, "이미 사용 중인 nickname입니다.");
+        return;
+      }
+    }
+
+    // 빈 칸은 null로 보내서 그 항목은 바꾸지 않는다.
+    final success = await authVM.updateProfile(
+      nickname: nickname.isEmpty ? null : nickname,
+      password: password.isEmpty ? null : password,
+    );
+    if (!mounted) return;
+
+    if (success) {
+      if (dialogContext.mounted) Navigator.pop(dialogContext);
+      showMessage(context, "프로필을 수정했습니다.");
+    } else if (!authVM.isLogin) {
+      // 세션이 만료됐으면 안내는 App이 띄우므로 다이얼로그만 닫는다.
+      if (dialogContext.mounted) Navigator.pop(dialogContext);
+    } else {
+      // 실패하면 다이얼로그를 닫지 않고 다시 시도할 수 있게 둔다.
+      showMessage(context, authVM.error ?? "프로필 수정에 실패 하셨습니다.");
+    }
   }
 
   void logoutPopup(AuthViewModel authVM) {
